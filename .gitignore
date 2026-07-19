@@ -1,3 +1,14 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# IDE
+.idea/
+.vscode/
+
+# macOS
+.DS_Store
+
+# Environment
 .env
 .env.*
-!.env.example
