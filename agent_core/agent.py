@@ -123,6 +123,15 @@ NetBox 关键服务包括：
                 arguments = json.loads(tool_call.function.arguments)
                 
                 logger.info(f"执行工具: {tool_name}")
+                
+                #如果工具名称是报告，先覆盖参数再执行
+                if tool_name == "final_report":
+                    # 用实际收集到的 issues 和 actions，避免 LLM 漏掉
+                    arguments["issues_found"] = self.detected_issues
+                    arguments["actions_taken"] = self.actions_taken
+                    if self.diagnosis_recommendations:
+                        arguments["recommendations"] = self.diagnosis_recommendations
+
                 tool_result = self.tool_executor.execute(tool_name, arguments)
 
                 #如果工具返回中有问题，则将问题对应的信息添加到全局列表中
@@ -136,15 +145,8 @@ NetBox 关键服务包括：
                     if tool_result.get("success"):
                         self.actions_taken.append(tool_result.get("message", f"执行了 {tool_name}"))
 
-                #如果工具名称是报告，则用收集到的 issues 覆盖 LLM 传的
                 if tool_name == "final_report":
-                    # 用实际收集到的 issues 和 actions，避免 LLM 漏掉
-                    arguments["issues_found"] = self.detected_issues
-                    arguments["actions_taken"] = self.actions_taken
-                    if self.diagnosis_recommendations:
-                        arguments["recommendations"] = self.diagnosis_recommendations
-                    # 重新执行 final_report 生成正确报告
-                    return self.tool_executor.execute(tool_name, arguments)
+                    return tool_result
 
                 #上下问历史中添加本次调用信息
                 self.conversation_history.append({
