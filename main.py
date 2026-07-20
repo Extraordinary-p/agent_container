@@ -286,6 +286,7 @@ def run_ai_agent(args):
     try:
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from agent_core.agent import AIOpsAgent
+        #把 args.provider 的值，传给构造函数中名为 provider 的参数。# 传入启动参数，不传入的话使用env文件中的变量进行传参
         agent = AIOpsAgent(provider=args.provider)
         agent.run_diagnosis_cycle("全面检查 NetBox 环境")
     except ImportError as e:

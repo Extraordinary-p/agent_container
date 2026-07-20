@@ -39,7 +39,7 @@ class AIOpsAgent:
         logger.info(f"初始化 AI Agent - Provider: {self.provider}, Model: {self.model}")
     
     def set_system_prompt(self) -> str:
-        return """你是一个专业的 NetBox Docker AIOps 智能运维 Agent。你的职责是：
+        return """你是一个专业的Docker AIOps 智能运维 Agent。你的职责是：
 
 1. **异常发现**：主动检查系统状态，识别潜在问题
 2. **诊断分析**：深入分析问题根源，给出专业建议
@@ -95,7 +95,7 @@ NetBox 关键服务包括：
             
             try:
                 response = self._call_openai_with_retry(
-                    messages=self.conversation_history,
+                    messages=self.conversation_history, #对话的上下文历史信息
                     tools=self.tools
                 )
             except Exception as e:
@@ -105,7 +105,11 @@ NetBox 关键服务包括：
             response_message = response.choices[0].message
             #重复调用，添加上下文信息到新一次的chat中
             self.conversation_history.append(response_message.dict())
-            
+            '''
+            tool_calls: OpenAI Function Calling（工具调用）机制的核心。
+            tool_calls 是 OpenAI API 返回的消息对象中的一个字段，当 LLM 决定需要调用工具时才会存在。
+            如果 LLM 认为不需要调用工具（直接回答问题），这个字段就是 None。
+            '''
             if not response_message.tool_calls:
                 logger.info("没有更多工具调用，完成诊断流程")
                 break
@@ -120,7 +124,7 @@ NetBox 关键服务包括：
                 #如果工具返回中有问题，则将问题对应的信息添加到全局列表中
                 if "issues" in tool_result and tool_result["issues"]:
                     self.detected_issues.extend(tool_result["issues"])
-                #如果使用了restart和prune工具并且工具执行结果中返回了成功，则也加入全局列表中
+                #如果使用了处置动作的工具，则也加入全局列表中
                 if tool_name in ["restart_service","prune_docker_resources","start_service"]:
                     if tool_result.get("success"):
                         self.actions_taken.append(tool_result.get("message", f"执行了 {tool_name}"))
