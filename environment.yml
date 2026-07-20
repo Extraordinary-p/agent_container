@@ -73,7 +73,6 @@ dependencies:
   - yaml=0.2.5
   - zlib=1.2.13
   - pip:
-      - ast-serialize==0.6.0
       - black==26.5.1
       - charset-normalizer==3.4.9
       - docker==7.2.0
