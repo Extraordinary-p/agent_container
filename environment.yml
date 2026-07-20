@@ -74,7 +74,7 @@ dependencies:
   - zlib=1.2.13
   - pip:
       - black==26.5.1
-      - charset-normalizer==3.4.9
+      - charset-normalizer==3.4.7
       - docker==7.2.0
       - fastapi==0.139.2
       - iniconfig==2.3.0
