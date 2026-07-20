@@ -271,17 +271,15 @@ class ToolExecutor:
             error_patterns = ['error', 'Error', 'ERROR', 'fatal', 'Fatal', 'FATAL', 'exception', 'Exception', 'failed', 'Failed']
             error_lines = []
             issues = []
-            # + 新增：将发现的错误转换为 issues
-            if error_lines:
-                issues.append(f"容器 {target_container.name} 日志发现 {len(error_lines)} 条错误")
-                # 可选：把前 3 条错误也加入 issues 详情
-                # for err in error_lines[:3]:
-                #     issues.append(f"  - {err.strip()}")
             for line in logs.split('\n'):
                 for pattern in error_patterns:
                     if pattern in line:
                         error_lines.append(line)
                         break
+            
+            # 将发现的错误转换为 issues
+            if error_lines:
+                issues.append(f"容器 {target_container.name} 日志发现 {len(error_lines)} 条错误")
             
             return {
                 "success": True,
