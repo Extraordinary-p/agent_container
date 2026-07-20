@@ -127,7 +127,10 @@ NetBox 关键服务包括：
 
                 #如果工具返回中有问题，则将问题对应的信息添加到全局列表中
                 if "issues" in tool_result and tool_result["issues"]:
-                    self.detected_issues.extend(tool_result["issues"])
+                    # 去重：避免同一个问题重复添加
+                    for issue in tool_result["issues"]:
+                        if issue not in self.detected_issues:
+                            self.detected_issues.append(issue)
                 #如果使用了处置动作的工具，则也加入全局列表中
                 if tool_name in ["restart_service","prune_docker_resources","start_service"]:
                     if tool_result.get("success"):
