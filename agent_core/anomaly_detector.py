@@ -13,6 +13,7 @@ class AnomalyDetector:
         try:
             result = subprocess.run(
                 ["docker"] + cmd_args,
+                #执行结果不会显示在终端，而是保存到 result 对象中。
                 capture_output=True,
                 text=True,
                 timeout=15
@@ -36,12 +37,18 @@ class AnomalyDetector:
             "ps", "-a",
             "--format", "{{.Names}}|{{.Status}}|{{.Ports}}|{{.CreatedAt}}"
         ])
-        
+
+        # 1. 把输出按换行符拆成一行一行，然后循环处理每一行
         for line in output.strip().split('\n'):
+
+            # 2. 校验：如果这行是空的，或者行里没有|分隔符，直接跳过（不处理垃圾数据）
             if not line or '|' not in line:
                 continue
-            
+
+            # 3. 用|把一行切成好几段（比如 "容器名|状态|退出码" → ["容器名", "状态", "退出码"]）
             parts = line.split('|')
+
+            # 4. 确保至少有2段数据（避免越界错误），才继续处理
             if len(parts) >= 2:
                 name = parts[0]
                 # 只关注 NetBox 相关容器

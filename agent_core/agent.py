@@ -103,6 +103,7 @@ NetBox 关键服务包括：
                 return {"success": False, "error": f"API error: {str(e)}"}
             
             response_message = response.choices[0].message
+            #重复调用，添加上下文信息到新一次的chat中
             self.conversation_history.append(response_message.dict())
             
             if not response_message.tool_calls:
@@ -115,17 +116,20 @@ NetBox 关键服务包括：
                 
                 logger.info(f"执行工具: {tool_name}")
                 tool_result = self.tool_executor.execute(tool_name, arguments)
-                
+
+                #如果工具返回中有问题，则将问题对应的信息添加到全局列表中
                 if "issues" in tool_result and tool_result["issues"]:
                     self.detected_issues.extend(tool_result["issues"])
-                
+                #如果使用了restart和prune工具并且工具执行结果中返回了成功，则也加入全局列表中
                 if tool_name == "restart_service" or tool_name == "prune_docker_resources":
                     if tool_result.get("success"):
                         self.actions_taken.append(tool_result.get("message", f"执行了 {tool_name}"))
-                
+
+                #如果工具名称是报告，则返回工具执行结果
                 if tool_name == "final_report":
                     return tool_result
-                
+
+                #上下问历史中添加本次调用信息
                 self.conversation_history.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
@@ -136,13 +140,16 @@ NetBox 关键服务包括：
         return self._generate_final_report()
     
     def _generate_final_report(self) -> Dict[str, Any]:
+        #如果detected_issues不存在的话则运行正常。
         if not self.detected_issues:
             summary = "系统运行正常，未发现明显异常"
         else:
             summary = f"检测到 {len(self.detected_issues)} 个问题，已执行 {len(self.actions_taken)} 个处置动作"
-        
+
+        #调用生成报告的工具
         return self.tool_executor.execute("final_report", {
             "summary": summary,
+            #将所有问题传入
             "issues_found": self.detected_issues,
             "recommendations": self.diagnosis_recommendations or ["建议定期检查系统健康状态"],
             "actions_taken": self.actions_taken or ["未执行任何自动处置动作"]
