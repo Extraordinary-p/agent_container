@@ -121,7 +121,7 @@ NetBox 关键服务包括：
                 if "issues" in tool_result and tool_result["issues"]:
                     self.detected_issues.extend(tool_result["issues"])
                 #如果使用了restart和prune工具并且工具执行结果中返回了成功，则也加入全局列表中
-                if tool_name == "restart_service" or tool_name == "prune_docker_resources":
+                if tool_name in ["restart_service","prune_docker_resources","start_service"]:
                     if tool_result.get("success"):
                         self.actions_taken.append(tool_result.get("message", f"执行了 {tool_name}"))
 
