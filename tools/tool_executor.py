@@ -47,8 +47,6 @@ class ToolExecutor:
             "check_service_health": self._check_service_health,
             "check_disk_space": self._check_disk_space,
             "check_memory_usage": self._check_memory_usage,
-            "inspect_container_logs": self._inspect_container_logs,
-            "restart_service": self._restart_service,
             "start_service": self._start_service,
             "prune_docker_resources": self._prune_docker_resources,
             "fix_docker_compose": self._fix_docker_compose,
